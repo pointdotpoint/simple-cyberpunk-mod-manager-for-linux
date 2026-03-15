@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
+import ModList from './components/ModList'
 import { useModStore } from './stores/modStore'
 import { useSettingsStore } from './stores/settingsStore'
 
@@ -16,7 +17,7 @@ function App(): JSX.Element {
   return (
     <Layout view={view} onViewChange={setView}>
       {view === 'mods' ? (
-        <div className="p-4 text-text-muted">Mod list placeholder</div>
+        <ModList />
       ) : (
         <div className="p-4 text-text-muted">Settings placeholder</div>
       )}
