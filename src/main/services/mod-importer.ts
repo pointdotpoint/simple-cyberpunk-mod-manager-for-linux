@@ -51,7 +51,7 @@ interface DetectionResult {
   redmodName?: string
 }
 
-function detectModType(extractDir: string, files: string[]): DetectionResult {
+export function detectModType(extractDir: string, files: string[]): DetectionResult {
   const types = new Set<ModType>()
   let redmodName: string | undefined
 
