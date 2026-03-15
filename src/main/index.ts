@@ -1,5 +1,9 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
+import { registerModHandlers } from './ipc/mods'
+import { registerSettingsHandlers } from './ipc/settings'
+import { registerGameDetectionHandlers } from './ipc/game-detection'
+import { closeDb } from './database/connection'
 
 const isDev = !app.isPackaged
 
@@ -34,6 +38,10 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  registerModHandlers()
+  registerSettingsHandlers()
+  registerGameDetectionHandlers()
+
   createWindow()
 
   app.on('activate', () => {
@@ -45,6 +53,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    closeDb()
     app.quit()
   }
 })
