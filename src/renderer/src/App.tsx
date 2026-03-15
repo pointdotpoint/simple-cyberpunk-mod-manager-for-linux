@@ -1,14 +1,26 @@
+import { useState, useEffect } from 'react'
+import Layout from './components/Layout'
+import { useModStore } from './stores/modStore'
+import { useSettingsStore } from './stores/settingsStore'
+
 function App(): JSX.Element {
+  const [view, setView] = useState<'mods' | 'settings'>('mods')
+  const fetchMods = useModStore((s) => s.fetchMods)
+  const fetchSettings = useSettingsStore((s) => s.fetchSettings)
+
+  useEffect(() => {
+    fetchMods()
+    fetchSettings()
+  }, [])
+
   return (
-    <div className="min-h-screen bg-background text-text flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-2">
-          <span className="text-neon-cyan">CP2077</span>{' '}
-          <span className="text-neon-magenta">Mod Manager</span>
-        </h1>
-        <p className="text-text-muted text-sm">Linux-first mod management for Cyberpunk 2077</p>
-      </div>
-    </div>
+    <Layout view={view} onViewChange={setView}>
+      {view === 'mods' ? (
+        <div className="p-4 text-text-muted">Mod list placeholder</div>
+      ) : (
+        <div className="p-4 text-text-muted">Settings placeholder</div>
+      )}
+    </Layout>
   )
 }
 
