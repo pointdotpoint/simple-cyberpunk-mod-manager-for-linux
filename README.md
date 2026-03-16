@@ -1,5 +1,7 @@
 # Simple Cyberpunk Mod Manager for Linux
 
+![Banner](banner.png)
+
 A lightweight desktop mod manager for **Cyberpunk 2077** on Linux. Built with Electron, React, and TypeScript.
 
 Mods are managed through a **staging directory pattern** — archives are extracted to a staging area, and enabling/disabling a mod copies or removes files from the game directory. The game folder is never modified destructively.
