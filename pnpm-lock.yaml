@@ -14,9 +14,6 @@ importers:
       better-sqlite3:
         specifier: ^12.8.0
         version: 12.8.0
-      electron:
-        specifier: ^41.0.2
-        version: 41.0.2
       electron-updater:
         specifier: ^6.8.3
         version: 6.8.3
@@ -60,6 +57,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.27
         version: 10.4.27(postcss@8.5.8)
+      electron:
+        specifier: ^41.0.2
+        version: 41.0.2
       electron-builder:
         specifier: ^26.8.1
         version: 26.8.1(electron-builder-squirrel-windows@26.8.1)
