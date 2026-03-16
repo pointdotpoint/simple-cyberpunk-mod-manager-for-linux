@@ -2,19 +2,23 @@ import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
 import ModList from './components/ModList'
 import SettingsView from './components/SettingsView'
+import LogsView from './components/LogsView'
 import ImportDialog from './components/ImportDialog'
+import NexusImportDialog from './components/NexusImportDialog'
 import ProgressOverlay from './components/ProgressOverlay'
 import ConflictDialog from './components/ConflictDialog'
+import Toast from './components/Toast'
 import { useModStore } from './stores/modStore'
 import { useSettingsStore } from './stores/settingsStore'
-import type { OperationProgress, ConflictInfo } from '../../shared/types'
+import type { OperationProgress, ConflictInfo, EnableResult } from '../../shared/types'
 
 function App(): JSX.Element {
-  const [view, setView] = useState<'mods' | 'settings'>('mods')
+  const [view, setView] = useState<'mods' | 'settings' | 'logs'>('mods')
   const [dragOver, setDragOver] = useState(false)
   const [importPath, setImportPath] = useState<string | null>(null)
   const [showImport, setShowImport] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [showNexusImport, setShowNexusImport] = useState(false)
   const [progress, setProgress] = useState<OperationProgress | null>(null)
   const [conflicts, setConflicts] = useState<{
     conflicts: ConflictInfo[]
@@ -53,8 +57,7 @@ function App(): JSX.Element {
     setDragOver(false)
     const file = e.dataTransfer.files[0]
     if (file) {
-      // In Electron, file.path gives the full path
-      setImportPath((file as unknown as { path: string }).path || file.name)
+      setImportPath(window.electronAPI.getPathForFile(file))
       setShowImport(true)
     }
   }
@@ -71,16 +74,34 @@ function App(): JSX.Element {
     }
   }
 
+  const handleHeaderDrop = async (filePath: string): Promise<void> => {
+    setImporting(true)
+    try {
+      await importMod(filePath)
+    } finally {
+      setImporting(false)
+    }
+  }
+
   return (
     <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
-      <Layout view={view} onViewChange={setView}>
-        {view === 'mods' ? <ModList /> : <SettingsView />}
+      <Layout view={view} onViewChange={setView} onFileDrop={handleHeaderDrop} importing={importing}>
+        {view === 'mods' && (
+          <ModList
+            onConflict={(modId: string, conflicts: ConflictInfo[]) =>
+              setConflicts({ modId, conflicts })
+            }
+            onNexusImportClick={() => setShowNexusImport(true)}
+          />
+        )}
+        {view === 'settings' && <SettingsView />}
+        {view === 'logs' && <LogsView />}
       </Layout>
 
       {/* Drag overlay indicator */}
       {dragOver && (
-        <div className="fixed inset-0 bg-neon-cyan/5 border-2 border-dashed border-neon-cyan/40 z-40 flex items-center justify-center pointer-events-none">
-          <span className="text-neon-cyan text-xl">Drop mod archive to import</span>
+        <div className="fixed inset-0 bg-neon-cyan/5 border-2 border-dashed border-neon-cyan/40 z-40 flex items-center justify-center pointer-events-none shadow-[inset_0_0_60px_rgba(0,240,255,0.06)]">
+          <span className="text-neon-cyan text-xl font-bold tracking-wide">Drop mod archive to import</span>
         </div>
       )}
 
@@ -95,7 +116,15 @@ function App(): JSX.Element {
         importing={importing}
       />
 
+      <NexusImportDialog
+        open={showNexusImport}
+        onClose={() => setShowNexusImport(false)}
+        onImportComplete={() => fetchMods()}
+      />
+
       {progress && <ProgressOverlay visible={true} {...progress} />}
+
+      <Toast />
 
       {conflicts && (
         <ConflictDialog

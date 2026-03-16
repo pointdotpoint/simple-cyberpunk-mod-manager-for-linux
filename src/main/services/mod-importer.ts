@@ -1,33 +1,17 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
+import { createExtractorFromFile } from 'node-unrar-js'
 import { v4 as uuidv4 } from 'uuid'
 import type { ImportResult, Mod, ModFile, ModType, OperationProgress } from '../../shared/types'
 import { getSetting, insertMod, insertModFiles } from '../database/queries'
 import { normalizeFilePath, normalizeStagingDirectory } from './case-normalizer'
+import { walkFiles } from './fs-utils'
 
-// node-7z has no type declarations; use require for the CommonJS module
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Seven = require('node-7z')
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/** Recursively collect all file paths relative to `baseDir`. */
-function walkFiles(baseDir: string, rel = ''): string[] {
-  const results: string[] = []
-  const entries = fs.readdirSync(path.join(baseDir, rel), { withFileTypes: true })
-  for (const entry of entries) {
-    const entryRel = rel ? path.join(rel, entry.name) : entry.name
-    if (entry.isDirectory()) {
-      results.push(...walkFiles(baseDir, entryRel))
-    } else {
-      results.push(entryRel)
-    }
-  }
-  return results
-}
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sevenBin = require('7zip-bin')
 
 /**
  * Some archives contain a single top-level directory that wraps all content.
@@ -212,16 +196,53 @@ function computeDeployPaths(
 }
 
 // ---------------------------------------------------------------------------
-// Extract using node-7z
+// Archive extraction
 // ---------------------------------------------------------------------------
 
-function extractArchive(
+function isRarFile(filePath: string): boolean {
+  return /\.rar$/i.test(filePath)
+}
+
+async function extractRar(
+  archivePath: string,
+  outputDir: string,
+  onProgress?: (progress: OperationProgress) => void
+): Promise<void> {
+  if (onProgress) {
+    onProgress({ operation: 'extract', current: 0, total: 100, label: 'Extracting RAR...' })
+  }
+
+  const extractor = await createExtractorFromFile({ filepath: archivePath, targetPath: outputDir })
+  const { files } = extractor.extract()
+
+  // Consume the generator to extract all files
+  let count = 0
+  for (const file of files) {
+    count++
+    if (onProgress && count % 10 === 0) {
+      onProgress({
+        operation: 'extract',
+        current: 50,
+        total: 100,
+        label: `Extracting... ${count} files`
+      })
+    }
+    void file
+  }
+
+  if (onProgress) {
+    onProgress({ operation: 'extract', current: 100, total: 100, label: 'Extraction complete' })
+  }
+}
+
+function extract7z(
   archivePath: string,
   outputDir: string,
   onProgress?: (progress: OperationProgress) => void
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const stream = Seven.extractFull(archivePath, outputDir, {
+      $bin: sevenBin.path7za,
       $progress: true,
       recursive: true
     })
@@ -240,6 +261,17 @@ function extractArchive(
     stream.on('end', () => resolve())
     stream.on('error', (err: Error) => reject(err))
   })
+}
+
+function extractArchive(
+  archivePath: string,
+  outputDir: string,
+  onProgress?: (progress: OperationProgress) => void
+): Promise<void> {
+  if (isRarFile(archivePath)) {
+    return extractRar(archivePath, outputDir, onProgress)
+  }
+  return extract7z(archivePath, outputDir, onProgress)
 }
 
 // ---------------------------------------------------------------------------
@@ -268,6 +300,9 @@ export async function importMod(
   archivePath: string,
   onProgress?: (progress: OperationProgress) => void
 ): Promise<ImportResult> {
+  // Ensure absolute path for WASM-based extractors
+  archivePath = path.resolve(archivePath)
+
   // 1. Create temp directory
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp2077-mod-'))
 
@@ -341,6 +376,7 @@ export async function importMod(
       name: modName,
       type: detection.type,
       status: 'disabled',
+      source: 'imported',
       sourceArchive: path.basename(archivePath),
       fileSize: totalSize,
       fileCount: stagedFiles.length,

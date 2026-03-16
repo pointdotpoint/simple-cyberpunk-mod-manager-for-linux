@@ -8,13 +8,13 @@ interface ModRowProps {
 }
 
 const TYPE_STYLES: Record<ModType, string> = {
-  archive: 'bg-blue-500/20 text-blue-400',
-  cet: 'bg-green-500/20 text-green-400',
-  redmod: 'bg-purple-500/20 text-purple-400',
-  redscript: 'bg-orange-500/20 text-orange-400',
-  tweakxl: 'bg-yellow-500/20 text-yellow-400',
-  red4ext: 'bg-red-500/20 text-red-400',
-  mixed: 'bg-neon-magenta/20 text-neon-magenta',
+  archive: 'bg-blue-500/20 text-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.15)]',
+  cet: 'bg-green-500/20 text-green-400 shadow-[0_0_6px_rgba(34,197,94,0.15)]',
+  redmod: 'bg-purple-500/20 text-purple-400 shadow-[0_0_6px_rgba(168,85,247,0.15)]',
+  redscript: 'bg-orange-500/20 text-orange-400 shadow-[0_0_6px_rgba(249,115,22,0.15)]',
+  tweakxl: 'bg-yellow-500/20 text-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.15)]',
+  red4ext: 'bg-red-500/20 text-red-400 shadow-[0_0_6px_rgba(239,68,68,0.15)]',
+  mixed: 'bg-neon-magenta/20 text-neon-magenta shadow-[0_0_6px_rgba(255,45,149,0.15)]',
   unknown: 'bg-gray-500/20 text-gray-400'
 }
 
@@ -35,10 +35,10 @@ export default function ModRow({ mod, selected, onSelect, onToggleEnable }: ModR
   return (
     <tr
       onClick={onSelect}
-      className={`cursor-pointer transition-colors ${
+      className={`cursor-pointer transition-all duration-150 ${
         selected
-          ? 'bg-neon-cyan/5 border-l-2 border-neon-cyan'
-          : 'border-l-2 border-transparent hover:bg-surface'
+          ? 'bg-neon-cyan/5 border-l-2 border-neon-cyan shadow-[inset_0_0_20px_rgba(0,240,255,0.04)]'
+          : 'border-l-2 border-transparent hover:bg-surface-hover'
       }`}
     >
       {/* Toggle */}
@@ -49,7 +49,7 @@ export default function ModRow({ mod, selected, onSelect, onToggleEnable }: ModR
             onToggleEnable()
           }}
           className={`relative w-10 h-5 rounded-full transition-all duration-200 ${
-            enabled ? 'bg-neon-cyan' : 'bg-border'
+            enabled ? 'bg-neon-cyan shadow-neon-cyan' : 'bg-border'
           }`}
         >
           <span
@@ -61,7 +61,7 @@ export default function ModRow({ mod, selected, onSelect, onToggleEnable }: ModR
       </td>
 
       {/* Name */}
-      <td className="px-4 py-3 font-bold text-text">{mod.name}</td>
+      <td className="px-4 py-3 font-bold text-text font-orbitron">{mod.name}</td>
 
       {/* Type badge */}
       <td className="px-4 py-3">

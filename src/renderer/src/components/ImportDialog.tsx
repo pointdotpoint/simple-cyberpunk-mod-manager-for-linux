@@ -18,7 +18,6 @@ export default function ImportDialog({
   const filename = archivePath ? archivePath.split('/').pop() ?? archivePath : null
 
   const handleBrowse = async (): Promise<void> => {
-    // This is handled by the parent via file dialog; kept as visual affordance
     const path = await window.electronAPI.openFileDialog([
       { name: 'Archives', extensions: ['zip', '7z', 'rar'] },
     ])
@@ -30,7 +29,7 @@ export default function ImportDialog({
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-surface border border-border rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="panel-cyber p-6 max-w-md w-full mx-4">
         {importing ? (
           <div className="flex flex-col items-center gap-4 py-8">
             <svg
@@ -65,16 +64,10 @@ export default function ImportDialog({
             </div>
             <p className="text-sm text-neon-cyan">Ready to import</p>
             <div className="flex gap-3 justify-end">
-              <button
-                onClick={onCancel}
-                className="px-4 py-2 text-sm rounded border border-border text-text-muted hover:bg-border/30 transition-colors"
-              >
+              <button onClick={onCancel} className="btn-ghost">
                 Cancel
               </button>
-              <button
-                onClick={onConfirm}
-                className="px-4 py-2 text-sm rounded bg-neon-cyan/10 border border-neon-cyan/40 text-neon-cyan hover:bg-neon-cyan/20 transition-colors"
-              >
+              <button onClick={onConfirm} className="btn-neon-cyan">
                 Import
               </button>
             </div>
@@ -83,7 +76,7 @@ export default function ImportDialog({
           <div className="flex flex-col gap-4">
             <h2 className="text-lg font-semibold">Import Mod</h2>
             <div
-              className="border-2 border-dashed border-border rounded-lg p-12 flex flex-col items-center gap-3 cursor-pointer hover:border-neon-cyan/40 transition-colors"
+              className="border-2 border-dashed border-border rounded-lg p-12 flex flex-col items-center gap-3 cursor-pointer hover:border-neon-cyan/40 hover:shadow-[inset_0_0_30px_rgba(0,240,255,0.04)] transition-all duration-200"
               onClick={handleBrowse}
             >
               <svg
@@ -105,10 +98,7 @@ export default function ImportDialog({
               </p>
             </div>
             <div className="flex justify-end">
-              <button
-                onClick={onCancel}
-                className="px-4 py-2 text-sm rounded border border-border text-text-muted hover:bg-border/30 transition-colors"
-              >
+              <button onClick={onCancel} className="btn-ghost">
                 Cancel
               </button>
             </div>

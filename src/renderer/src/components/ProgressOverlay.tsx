@@ -19,14 +19,14 @@ export default function ProgressOverlay({
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-surface border border-border rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="panel-cyber p-6 max-w-md w-full mx-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-text-muted mb-4">
           {operation}
         </h3>
 
         <div className="h-2 bg-border rounded-full overflow-hidden mb-3">
           <div
-            className="h-full bg-neon-cyan transition-all duration-300"
+            className="h-full bg-neon-cyan shadow-neon-cyan transition-all duration-300"
             style={{ width: `${percentage}%` }}
           />
         </div>

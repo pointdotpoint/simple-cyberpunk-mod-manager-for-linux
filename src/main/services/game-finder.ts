@@ -42,14 +42,25 @@ function readVdfContent(): string | null {
 
 export function detectGameDirectory(): string | null {
   const content = readVdfContent()
-  if (!content) return null
+  if (content) {
+    const libraryPaths = parseVdfLibraryPaths(content)
+    for (const libraryPath of libraryPaths) {
+      const gamePath = path.join(libraryPath, CP2077_RELATIVE_PATH)
+      if (fs.existsSync(gamePath)) {
+        return path.join(libraryPath, 'steamapps', 'common', 'Cyberpunk 2077')
+      }
+    }
+  }
 
-  const libraryPaths = parseVdfLibraryPaths(content)
-
-  for (const libraryPath of libraryPaths) {
-    const gamePath = path.join(libraryPath, CP2077_RELATIVE_PATH)
+  // Fallback: check common Steam install paths directly
+  const fallbackPaths = [
+    path.join(os.homedir(), '.local', 'share', 'Steam'),
+    path.join(os.homedir(), '.steam', 'steam')
+  ]
+  for (const steamPath of fallbackPaths) {
+    const gamePath = path.join(steamPath, CP2077_RELATIVE_PATH)
     if (fs.existsSync(gamePath)) {
-      return path.join(libraryPath, 'steamapps', 'common', 'Cyberpunk 2077')
+      return path.join(steamPath, 'steamapps', 'common', 'Cyberpunk 2077')
     }
   }
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useToastStore } from './toastStore'
 import type { Mod, EnableResult } from '../../../shared/types'
 
 type SortColumn = 'name' | 'type' | 'fileSize' | 'importedAt'
@@ -8,7 +9,6 @@ interface ModStore {
   selectedIds: Set<string>
   lastSelectedId: string | null
   loading: boolean
-  error: string | null
   searchQuery: string
   typeFilter: string | null
   sortColumn: SortColumn
@@ -38,81 +38,123 @@ interface ModStore {
   setSort: (column: SortColumn) => void
 }
 
+const toast = () => useToastStore.getState()
+
 export const useModStore = create<ModStore>((set, get) => ({
   mods: [],
   selectedIds: new Set(),
   lastSelectedId: null,
   loading: false,
-  error: null,
   searchQuery: '',
   typeFilter: null,
   sortColumn: 'name',
   sortDirection: 'asc',
 
   fetchMods: async () => {
-    set({ loading: true, error: null })
+    set({ loading: true })
     try {
       const mods = await window.electronAPI.listMods()
       set({ mods, loading: false })
     } catch (err) {
-      set({ error: String(err), loading: false })
+      set({ loading: false })
+      toast().addToast('error', `Failed to load mods: ${err}. Try restarting the app.`)
     }
   },
 
   importMod: async (archivePath: string) => {
-    set({ loading: true, error: null })
+    set({ loading: true })
     try {
       await window.electronAPI.importMod(archivePath)
       await get().fetchMods()
+      toast().addToast('success', 'Mod imported successfully')
     } catch (err) {
-      set({ error: String(err), loading: false })
+      set({ loading: false })
+      toast().addToast('error', `Failed to import mod: ${err}`)
     }
   },
 
   enableMod: async (id: string) => {
-    const result = await window.electronAPI.enableMod(id)
-    await get().fetchMods()
-    return result
+    try {
+      const result = await window.electronAPI.enableMod(id)
+      await get().fetchMods()
+      if (result.success) {
+        toast().addToast('success', 'Mod enabled')
+      }
+      return result
+    } catch (err) {
+      toast().addToast('error', `Failed to enable mod: ${err}`)
+      return { success: false, conflicts: [] }
+    }
   },
 
   enableModForce: async (id: string) => {
-    await window.electronAPI.enableModForce(id)
-    await get().fetchMods()
+    try {
+      await window.electronAPI.enableModForce(id)
+      await get().fetchMods()
+      toast().addToast('success', 'Mod enabled (conflicts overridden)')
+    } catch (err) {
+      toast().addToast('error', `Failed to enable mod: ${err}`)
+    }
   },
 
   disableMod: async (id: string) => {
-    await window.electronAPI.disableMod(id)
-    await get().fetchMods()
+    try {
+      await window.electronAPI.disableMod(id)
+      await get().fetchMods()
+      toast().addToast('success', 'Mod disabled')
+    } catch (err) {
+      toast().addToast('error', `Failed to disable mod: ${err}`)
+    }
   },
 
   deleteMod: async (id: string) => {
-    await window.electronAPI.deleteMod(id)
-    set((state) => {
-      const selectedIds = new Set(state.selectedIds)
-      selectedIds.delete(id)
-      return { selectedIds }
-    })
-    await get().fetchMods()
+    try {
+      await window.electronAPI.deleteMod(id)
+      set((state) => {
+        const selectedIds = new Set(state.selectedIds)
+        selectedIds.delete(id)
+        return { selectedIds }
+      })
+      await get().fetchMods()
+      toast().addToast('success', 'Mod deleted')
+    } catch (err) {
+      toast().addToast('error', `Failed to delete mod: ${err}`)
+    }
   },
 
   bulkEnable: async (ids: string[]) => {
-    await window.electronAPI.bulkEnable(ids)
-    await get().fetchMods()
+    try {
+      await window.electronAPI.bulkEnable(ids)
+      await get().fetchMods()
+      toast().addToast('success', `${ids.length} mods enabled`)
+    } catch (err) {
+      toast().addToast('error', `Failed to enable mods: ${err}`)
+    }
   },
 
   bulkDisable: async (ids: string[]) => {
-    await window.electronAPI.bulkDisable(ids)
-    await get().fetchMods()
+    try {
+      await window.electronAPI.bulkDisable(ids)
+      await get().fetchMods()
+      toast().addToast('success', `${ids.length} mods disabled`)
+    } catch (err) {
+      toast().addToast('error', `Failed to disable mods: ${err}`)
+    }
   },
 
   bulkDelete: async (ids: string[]) => {
-    await window.electronAPI.bulkDelete(ids)
-    set((state) => {
-      const selectedIds = new Set(state.selectedIds)
-      for (const id of ids) selectedIds.delete(id)
-      return { selectedIds }
-    })
-    await get().fetchMods()
+    try {
+      await window.electronAPI.bulkDelete(ids)
+      set((state) => {
+        const selectedIds = new Set(state.selectedIds)
+        for (const id of ids) selectedIds.delete(id)
+        return { selectedIds }
+      })
+      await get().fetchMods()
+      toast().addToast('success', `${ids.length} mods deleted`)
+    } catch (err) {
+      toast().addToast('error', `Failed to delete mods: ${err}`)
+    }
   },
 
   selectMod: (id: string) => {
@@ -177,5 +219,5 @@ export const useModStore = create<ModStore>((set, get) => ({
       }
       return { sortColumn: column, sortDirection: 'asc' }
     })
-  },
+  }
 }))

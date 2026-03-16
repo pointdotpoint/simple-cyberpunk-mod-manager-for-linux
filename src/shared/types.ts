@@ -1,3 +1,47 @@
+// Log types
+export type LogSource = 'cet' | 'red4ext' | 'game' | 'other'
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug'
+
+export interface LogFileInfo {
+  id: string
+  relativePath: string
+  absolutePath: string
+  source: LogSource
+  fileName: string
+  sizeBytes: number
+  modifiedAt: string
+}
+
+export interface LogLine {
+  fileId: string
+  lineNumber: number
+  text: string
+  level: LogLevel | null
+  source: LogSource
+  fileName: string
+}
+
+export interface LogReadResult {
+  fileId: string
+  fileName: string
+  source: LogSource
+  lines: LogLine[]
+  totalLines: number
+  truncated: boolean
+}
+
+export interface LogSearchResult {
+  fileId: string
+  fileName: string
+  matches: LogLine[]
+  matchCount: number
+}
+
+export interface LogUpdateEvent {
+  fileId: string
+  newLines: LogLine[]
+}
+
 // Mod types
 export type ModType =
   | 'archive'
@@ -11,11 +55,14 @@ export type ModType =
 
 export type ModStatus = 'enabled' | 'disabled'
 
+export type ModSource = 'imported' | 'scanned'
+
 export interface Mod {
   id: string // UUID
   name: string // Display name
   type: ModType
   status: ModStatus
+  source: ModSource
   sourceArchive: string | null // Original archive filename
   fileSize: number | null // Total size in bytes
   fileCount: number | null // Number of files
@@ -60,8 +107,15 @@ export interface EnableResult {
   conflicts?: ConflictInfo[]
 }
 
+export interface ScanResult {
+  discovered: number
+  skipped: number
+  errors: string[]
+}
+
 // IPC API exposed via contextBridge
 export interface ElectronAPI {
+  getPathForFile(file: File): string
   listMods(): Promise<Mod[]>
   importMod(archivePath: string): Promise<ImportResult>
   enableMod(id: string): Promise<EnableResult>
@@ -76,7 +130,15 @@ export interface ElectronAPI {
   detectGame(): Promise<string | null>
   browseDirectory(): Promise<string | null>
   onProgress(callback: (progress: OperationProgress) => void): () => void
+  scanMods(): Promise<ScanResult>
   openFileDialog(
     filters?: { name: string; extensions: string[] }[]
   ): Promise<string | null>
+  nexusDownload(url: string): Promise<ImportResult>
+  scanLogs(): Promise<LogFileInfo[]>
+  readLogs(fileId: string | null, tail: number): Promise<LogReadResult[]>
+  searchLogs(pattern: string, sourceFilter: LogSource | null): Promise<LogSearchResult[]>
+  startLogWatch(): Promise<void>
+  stopLogWatch(): Promise<void>
+  onLogUpdate(callback: (event: LogUpdateEvent) => void): () => void
 }

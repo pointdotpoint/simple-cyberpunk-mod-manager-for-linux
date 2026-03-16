@@ -3,7 +3,12 @@ import { join } from 'path'
 import { registerModHandlers } from './ipc/mods'
 import { registerSettingsHandlers } from './ipc/settings'
 import { registerGameDetectionHandlers } from './ipc/game-detection'
+import { registerNexusHandlers } from './ipc/nexus'
+import { registerLogHandlers, cleanupLogWatchers } from './ipc/logs'
 import { closeDb } from './database/connection'
+import { getSetting, setSetting, getAllMods } from './database/queries'
+import { detectGameDirectory } from './services/game-finder'
+import { scanExistingMods } from './services/mod-scanner'
 
 const isDev = !app.isPackaged
 
@@ -41,6 +46,22 @@ app.whenReady().then(() => {
   registerModHandlers()
   registerSettingsHandlers()
   registerGameDetectionHandlers()
+  registerNexusHandlers()
+  registerLogHandlers()
+
+  // Auto-detect game directory on first launch
+  if (!getSetting('game_directory')) {
+    const detected = detectGameDirectory()
+    if (detected) {
+      setSetting('game_directory', detected)
+    }
+  }
+
+  // Scan existing mods on first launch (fresh DB with no mods)
+  const gameDir = getSetting('game_directory')
+  if (gameDir && getAllMods().length === 0) {
+    scanExistingMods(gameDir)
+  }
 
   createWindow()
 
@@ -53,6 +74,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    cleanupLogWatchers()
     closeDb()
     app.quit()
   }

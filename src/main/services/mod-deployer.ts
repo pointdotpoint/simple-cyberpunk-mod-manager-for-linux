@@ -8,7 +8,8 @@ import {
   getConflictingFiles,
   updateModStatus,
   deleteMod as deleteModFromDb,
-  getSetting
+  getSetting,
+  updateModFileStagingPath
 } from '../database/queries'
 
 const DEFAULT_STAGING_DIR = path.join(
@@ -109,17 +110,35 @@ export function disableMod(modId: string): void {
   const gameDir = getSetting('game_directory')
   if (!gameDir) throw new Error('Game directory is not set')
 
+  const stagingDir = getStagingDir()
+
   for (const modFile of modFiles) {
     if (!modFile.deployPath) continue
 
     const dest = path.join(gameDir, modFile.deployPath)
-    try {
-      fs.unlinkSync(dest)
-      removeEmptyDirs(dest, gameDir)
-    } catch (err: unknown) {
-      // Ignore if file doesn't exist
-      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-        throw err
+
+    if (mod.source === 'scanned' && modFile.stagingPath === '') {
+      // Scanned mod with no staging copy: move from game dir to staging
+      const stagingTarget = path.join(stagingDir, modId, modFile.deployPath)
+      try {
+        fs.mkdirSync(path.dirname(stagingTarget), { recursive: true })
+        fs.renameSync(dest, stagingTarget)
+        removeEmptyDirs(dest, gameDir)
+        updateModFileStagingPath(modFile.id, modFile.deployPath)
+      } catch (err: unknown) {
+        if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+          throw err
+        }
+      }
+    } else {
+      // Imported mod or scanned mod already in staging: delete from game dir
+      try {
+        fs.unlinkSync(dest)
+        removeEmptyDirs(dest, gameDir)
+      } catch (err: unknown) {
+        if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+          throw err
+        }
       }
     }
   }

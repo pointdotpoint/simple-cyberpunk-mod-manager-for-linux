@@ -16,6 +16,7 @@ function initSchema(database: Database.Database): void {
       name TEXT NOT NULL,
       type TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'disabled',
+      source TEXT NOT NULL DEFAULT 'imported',
       source_archive TEXT,
       file_size INTEGER,
       file_count INTEGER,
@@ -38,6 +39,13 @@ function initSchema(database: Database.Database): void {
       value TEXT NOT NULL
     );
   `)
+
+  // Migration: add source column for existing databases
+  try {
+    database.exec("ALTER TABLE mods ADD COLUMN source TEXT NOT NULL DEFAULT 'imported'")
+  } catch {
+    // Column already exists
+  }
 }
 
 export function getDb(): Database.Database {

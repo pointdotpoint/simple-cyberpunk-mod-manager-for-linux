@@ -14,12 +14,15 @@ export default function BulkActions({
   onClearSelection
 }: BulkActionsProps): JSX.Element {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 mx-4 bg-surface border border-border rounded">
+    <div
+      className="flex items-center gap-3 px-4 py-2 mx-4 card-cyber"
+      style={{ boxShadow: '0 0 12px rgba(0, 240, 255, 0.04)' }}
+    >
       <span className="text-text text-sm font-medium">{selectedCount} selected</span>
 
       <button
         onClick={onEnableAll}
-        className="px-3 py-1 text-sm text-neon-cyan hover:bg-neon-cyan/10 rounded transition-colors"
+        className="px-3 py-1 text-sm text-neon-cyan hover:bg-neon-cyan/10 hover:shadow-neon-cyan rounded transition-all duration-200"
       >
         Enable All
       </button>
@@ -31,10 +34,7 @@ export default function BulkActions({
         Disable All
       </button>
 
-      <button
-        onClick={onDeleteAll}
-        className="px-3 py-1 text-sm text-red-400 hover:bg-red-500/10 rounded transition-colors"
-      >
+      <button onClick={onDeleteAll} className="btn-danger">
         Delete All
       </button>
 

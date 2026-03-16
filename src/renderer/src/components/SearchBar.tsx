@@ -4,6 +4,7 @@ interface SearchBarProps {
   typeFilter: string | null
   onTypeFilterChange: (type: string | null) => void
   onImportClick: () => void
+  onNexusImportClick: () => void
 }
 
 const MOD_TYPES = [
@@ -23,7 +24,8 @@ export default function SearchBar({
   onSearchChange,
   typeFilter,
   onTypeFilterChange,
-  onImportClick
+  onImportClick,
+  onNexusImportClick
 }: SearchBarProps): JSX.Element {
   return (
     <div className="flex items-center gap-3 p-4">
@@ -47,7 +49,7 @@ export default function SearchBar({
           placeholder="Search mods..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-10 pr-3 py-2 bg-surface text-text placeholder-text-muted border border-border rounded focus:outline-none focus:border-neon-cyan/50"
+          className="input-cyber pl-10"
         />
       </div>
 
@@ -57,7 +59,7 @@ export default function SearchBar({
         onChange={(e) =>
           onTypeFilterChange(e.target.value === 'All Types' ? null : e.target.value.toLowerCase())
         }
-        className="px-3 py-2 bg-surface text-text border border-border rounded focus:outline-none focus:border-neon-cyan/50"
+        className="input-cyber w-auto"
       >
         {MOD_TYPES.map((t) => (
           <option key={t} value={t}>
@@ -66,11 +68,14 @@ export default function SearchBar({
         ))}
       </select>
 
-      {/* Import button */}
+      {/* Import buttons */}
       <button
-        onClick={onImportClick}
-        className="px-4 py-2 bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/30 hover:bg-neon-cyan/20 rounded whitespace-nowrap transition-colors"
+        onClick={onNexusImportClick}
+        className="btn-ghost hover:border-neon-cyan/30 hover:text-neon-cyan whitespace-nowrap"
       >
+        Import from Nexus
+      </button>
+      <button onClick={onImportClick} className="btn-neon-cyan whitespace-nowrap">
         Import Mod
       </button>
     </div>

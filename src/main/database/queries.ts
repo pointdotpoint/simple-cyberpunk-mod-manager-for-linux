@@ -1,4 +1,4 @@
-import type { Mod, ModFile, ModStatus } from '../../shared/types'
+import type { Mod, ModFile, ModSource, ModStatus } from '../../shared/types'
 import { getDb } from './connection'
 
 // Row types matching the SQL schema (snake_case)
@@ -7,6 +7,7 @@ interface ModRow {
   name: string
   type: string
   status: string
+  source: string
   source_archive: string | null
   file_size: number | null
   file_count: number | null
@@ -36,6 +37,7 @@ function rowToMod(row: ModRow): Mod {
     name: row.name,
     type: row.type as Mod['type'],
     status: row.status as ModStatus,
+    source: (row.source ?? 'imported') as ModSource,
     sourceArchive: row.source_archive,
     fileSize: row.file_size,
     fileCount: row.file_count,
@@ -73,13 +75,14 @@ export function getMod(id: string): Mod | null {
 export function insertMod(mod: Mod): void {
   const db = getDb()
   db.prepare(
-    `INSERT INTO mods (id, name, type, status, source_archive, file_size, file_count, imported_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO mods (id, name, type, status, source, source_archive, file_size, file_count, imported_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     mod.id,
     mod.name,
     mod.type,
     mod.status,
+    mod.source,
     mod.sourceArchive,
     mod.fileSize,
     mod.fileCount,
@@ -179,4 +182,19 @@ export function setSetting(key: string, value: string): void {
   db.prepare(
     'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'
   ).run(key, value)
+}
+
+// --- Scanner helpers ---
+
+export function getAllTrackedDeployPaths(): Set<string> {
+  const db = getDb()
+  const rows = db
+    .prepare('SELECT deploy_path FROM mod_files WHERE deploy_path IS NOT NULL')
+    .all() as { deploy_path: string }[]
+  return new Set(rows.map((r) => r.deploy_path))
+}
+
+export function updateModFileStagingPath(fileId: number, stagingPath: string): void {
+  const db = getDb()
+  db.prepare('UPDATE mod_files SET staging_path = ? WHERE id = ?').run(stagingPath, fileId)
 }

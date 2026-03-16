@@ -3,7 +3,7 @@ import { useModStore } from '../stores/modStore'
 import SearchBar from './SearchBar'
 import BulkActions from './BulkActions'
 import ModRow from './ModRow'
-import type { Mod } from '../../../shared/types'
+import type { Mod, ConflictInfo } from '../../../shared/types'
 
 type SortColumn = 'name' | 'type' | 'fileSize' | 'importedAt'
 
@@ -36,7 +36,12 @@ function sortMods(mods: Mod[], column: SortColumn, direction: 'asc' | 'desc'): M
   return sorted
 }
 
-export default function ModList(): JSX.Element {
+interface ModListProps {
+  onConflict?: (modId: string, conflicts: ConflictInfo[]) => void
+  onNexusImportClick?: () => void
+}
+
+export default function ModList({ onConflict, onNexusImportClick }: ModListProps): JSX.Element {
   const mods = useModStore((s) => s.mods)
   const selectedIds = useModStore((s) => s.selectedIds)
   const searchQuery = useModStore((s) => s.searchQuery)
@@ -96,11 +101,26 @@ export default function ModList(): JSX.Element {
     if (mod.status === 'enabled') {
       await disableMod(mod.id)
     } else {
-      await enableMod(mod.id)
+      const result = await enableMod(mod.id)
+      if (!result.success && result.conflicts?.length) {
+        onConflict?.(mod.id, result.conflicts)
+      }
     }
   }
 
   const selectedArray = Array.from(selectedIds)
+
+  const enabledFilteredIds = useMemo(
+    () => filteredMods.filter((m) => m.status === 'enabled').map((m) => m.id),
+    [filteredMods]
+  )
+  const isFiltered = !!(searchQuery || typeFilter)
+
+  const handleDisableAll = (): void => {
+    if (enabledFilteredIds.length > 0) {
+      bulkDisable(enabledFilteredIds)
+    }
+  }
 
   const sortColumns: SortColumn[] = ['name', 'type', 'fileSize', 'importedAt']
 
@@ -112,7 +132,21 @@ export default function ModList(): JSX.Element {
         typeFilter={typeFilter}
         onTypeFilterChange={setTypeFilter}
         onImportClick={handleImportClick}
+        onNexusImportClick={onNexusImportClick ?? (() => {})}
       />
+
+      {enabledFilteredIds.length > 0 && (
+        <div className="flex items-center px-4 pb-2">
+          <button
+            onClick={handleDisableAll}
+            className="px-3 py-1 text-sm text-text-muted hover:bg-surface hover:text-warning rounded transition-colors"
+          >
+            {isFiltered
+              ? `Disable ${enabledFilteredIds.length} filtered mod${enabledFilteredIds.length === 1 ? '' : 's'}`
+              : `Disable all ${enabledFilteredIds.length} mod${enabledFilteredIds.length === 1 ? '' : 's'}`}
+          </button>
+        </div>
+      )}
 
       {selectedIds.size > 1 && (
         <BulkActions
@@ -125,20 +159,22 @@ export default function ModList(): JSX.Element {
       )}
 
       {filteredMods.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-text-muted">
+        <div className="flex-1 flex items-center justify-center text-text-muted font-light tracking-wide">
           No mods found. Import a mod to get started.
         </div>
       ) : (
         <div className="flex-1 overflow-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border text-left text-text-muted text-sm">
+              <tr className="border-b border-border text-left text-text-muted text-sm bg-surface/50">
                 <th className="px-4 py-2 w-16">Toggle</th>
                 {sortColumns.map((col) => (
                   <th
                     key={col}
                     onClick={() => setSort(col)}
-                    className="px-4 py-2 cursor-pointer hover:text-text select-none"
+                    className={`px-4 py-2 cursor-pointer hover:text-text select-none transition-colors ${
+                      sortColumn === col ? 'text-neon-cyan' : ''
+                    }`}
                   >
                     {SORT_LABELS[col]}{' '}
                     {sortColumn === col && (

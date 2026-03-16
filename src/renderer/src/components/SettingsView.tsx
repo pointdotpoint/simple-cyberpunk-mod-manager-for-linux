@@ -10,7 +10,7 @@ export default function SettingsView(): JSX.Element {
   return (
     <div className="max-w-2xl mx-auto p-6">
       {/* Game Directory */}
-      <div className="bg-surface border border-border rounded-lg p-4 mb-4">
+      <div className="card-cyber p-4 mb-4">
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted">
             Cyberpunk 2077 Installation
@@ -51,32 +51,26 @@ export default function SettingsView(): JSX.Element {
         </p>
 
         <div className="flex gap-3">
-          <button
-            onClick={detectGame}
-            className="px-3 py-1.5 text-sm rounded border border-border text-text-muted hover:bg-border/30 transition-colors"
-          >
+          <button onClick={detectGame} className="btn-ghost text-sm px-3 py-1.5">
             Auto-detect
           </button>
-          <button
-            onClick={browseDirectory}
-            className="px-3 py-1.5 text-sm rounded border border-neon-cyan/40 text-neon-cyan hover:bg-neon-cyan/10 transition-colors"
-          >
+          <button onClick={browseDirectory} className="btn-neon-cyan text-sm px-3 py-1.5">
             Browse...
           </button>
         </div>
       </div>
 
       {/* About */}
-      <div className="bg-surface border border-border rounded-lg p-4 mb-4">
+      <div className="card-cyber p-4 mb-4">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted mb-3">
           About
         </h2>
-        <p className="text-sm text-text">CP2077 Mod Manager</p>
+        <p className="text-sm text-text">Simple Cyberpunk Mod Manager for Linux</p>
         <p className="text-sm text-text-muted mt-1">
-          A Linux-first mod manager for Cyberpunk 2077. Manages mod archives using a staging
+          A simple mod manager for Cyberpunk 2077 on Linux. Manages mod archives using a staging
           directory pattern for safe, reversible deployments.
         </p>
-        <p className="text-xs text-text-muted mt-2">Version 1.0.0</p>
+        <p className="text-xs text-neon-cyan/40 mt-2">Version 1.0.0</p>
       </div>
     </div>
   )

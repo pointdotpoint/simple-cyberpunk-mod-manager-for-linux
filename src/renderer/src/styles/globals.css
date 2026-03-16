@@ -7,8 +7,9 @@
     @apply bg-background text-text antialiased;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-      sans-serif;
+    font-family: 'DotGothic16', sans-serif;
+    background: linear-gradient(180deg, #0a0a0f 0%, #0d0d18 50%, #0a0a0f 100%);
+    background-attachment: fixed;
   }
 
   * {
@@ -25,9 +26,82 @@
 
   ::-webkit-scrollbar-thumb {
     @apply bg-border rounded;
+    box-shadow: 0 0 4px rgba(0, 240, 255, 0.1);
   }
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-text-muted;
+    box-shadow: 0 0 6px rgba(0, 240, 255, 0.2);
+  }
+}
+
+@layer components {
+  .btn-neon-cyan {
+    @apply px-4 py-2 text-sm rounded border border-neon-cyan/40 text-neon-cyan
+      bg-neon-cyan/10 transition-all duration-200;
+  }
+  .btn-neon-cyan:hover {
+    @apply bg-neon-cyan/20 shadow-neon-cyan;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 text-sm rounded border border-border text-text-muted
+      transition-all duration-200;
+  }
+  .btn-ghost:hover {
+    @apply bg-border/30 text-text;
+  }
+
+  .btn-neon-yellow {
+    @apply px-4 py-2 text-sm rounded border border-neon-yellow/40 text-neon-yellow
+      bg-neon-yellow/10 transition-all duration-200;
+  }
+  .btn-neon-yellow:hover {
+    @apply bg-neon-yellow/20 shadow-neon-yellow;
+  }
+
+  .btn-danger {
+    @apply px-3 py-1 text-sm rounded text-red-400 transition-all duration-200;
+  }
+  .btn-danger:hover {
+    @apply bg-red-500/10;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3), 0 0 20px rgba(239, 68, 68, 0.1);
+  }
+
+  .panel-cyber {
+    @apply bg-surface border border-border rounded-lg;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.05), 0 0 40px rgba(0, 240, 255, 0.02);
+  }
+
+  .card-cyber {
+    @apply bg-surface border border-border rounded-lg transition-all duration-200;
+  }
+  .card-cyber:hover {
+    @apply border-neon-cyan/20;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.06);
+  }
+
+  .input-cyber {
+    @apply w-full px-3 py-2 bg-surface text-text placeholder-text-muted
+      border border-border rounded transition-all duration-200;
+  }
+  .input-cyber:focus {
+    @apply outline-none border-neon-cyan/50;
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.15);
+  }
+
+  .scanlines::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 240, 255, 0.015) 2px,
+      rgba(0, 240, 255, 0.015) 4px
+    );
   }
 }
