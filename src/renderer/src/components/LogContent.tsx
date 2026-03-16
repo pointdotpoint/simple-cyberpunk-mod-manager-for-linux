@@ -16,6 +16,7 @@ const sourceBadgeStyles: Record<LogSource, string> = {
   cet: 'bg-purple-500/20 text-purple-400',
   red4ext: 'bg-blue-500/20 text-blue-400',
   game: 'bg-green-500/20 text-green-400',
+  system: 'bg-orange-500/20 text-orange-400',
   other: 'bg-gray-500/20 text-gray-400'
 }
 
@@ -216,7 +217,7 @@ function LogLineRow({
       <span
         className={`inline-flex items-center px-1 rounded text-[10px] uppercase tracking-wider shrink-0 mr-2 ${sourceBadgeStyles[line.source]}`}
       >
-        {line.source === 'red4ext' ? 'R4E' : line.source === 'cet' ? 'CET' : line.source === 'game' ? 'GAM' : 'OTH'}
+        {line.source === 'system' ? 'SYS' : line.source === 'red4ext' ? 'R4E' : line.source === 'cet' ? 'CET' : line.source === 'game' ? 'GAM' : 'OTH'}
       </span>
 
       {/* Log text */}

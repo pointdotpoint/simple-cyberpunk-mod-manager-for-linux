@@ -18,9 +18,9 @@ files:
   - out/**
   - node_modules/better-sqlite3/**
   - node_modules/7zip-bin/**
-  - node_modules/node-7z/**
   - node_modules/node-unrar-js/**
 publish:
   provider: github
   owner: pointdotpoint
   repo: simple-cyberpunk-mod-manager-for-linux
+  releaseType: release

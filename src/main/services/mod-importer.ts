@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
+import { execFile } from 'child_process'
 import { createExtractorFromFile } from 'node-unrar-js'
 import { v4 as uuidv4 } from 'uuid'
 import type { ImportResult, Mod, ModFile, ModType, OperationProgress } from '../../shared/types'
@@ -8,8 +9,6 @@ import { getSetting, insertMod, insertModFiles } from '../database/queries'
 import { normalizeFilePath, normalizeStagingDirectory } from './case-normalizer'
 import { walkFiles } from './fs-utils'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Seven = require('node-7z')
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sevenBin = require('7zip-bin')
 
@@ -235,31 +234,42 @@ async function extractRar(
   }
 }
 
+function get7zaBinPath(): string {
+  let binPath: string = sevenBin.path7za
+  // In packaged Electron apps, the binary is inside app.asar but must be
+  // spawned from app.asar.unpacked (asar is a file, not a directory).
+  if (binPath.includes('app.asar')) {
+    binPath = binPath.replace('app.asar', 'app.asar.unpacked')
+  }
+  return binPath
+}
+
 function extract7z(
   archivePath: string,
   outputDir: string,
   onProgress?: (progress: OperationProgress) => void
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const stream = Seven.extractFull(archivePath, outputDir, {
-      $bin: sevenBin.path7za,
-      $progress: true,
-      recursive: true
-    })
+    const binPath = get7zaBinPath()
+    const args = ['x', archivePath, `-o${outputDir}`, '-y', '-r']
 
-    stream.on('progress', (progress: { percent: number }) => {
-      if (onProgress) {
-        onProgress({
-          operation: 'extract',
-          current: Math.round(progress.percent),
-          total: 100,
-          label: `Extracting... ${Math.round(progress.percent)}%`
-        })
+    if (onProgress) {
+      onProgress({
+        operation: 'extract',
+        current: 10,
+        total: 100,
+        label: 'Extracting...'
+      })
+    }
+
+    execFile(binPath, args, { cwd: os.tmpdir(), maxBuffer: 10 * 1024 * 1024 }, (err, _stdout, stderr) => {
+      if (err) {
+        const detail = stderr ? `: ${stderr.trim()}` : ''
+        reject(new Error(`7z extraction failed${detail}`))
+      } else {
+        resolve()
       }
     })
-
-    stream.on('end', () => resolve())
-    stream.on('error', (err: Error) => reject(err))
   })
 }
 

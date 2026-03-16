@@ -1,5 +1,5 @@
 // Log types
-export type LogSource = 'cet' | 'red4ext' | 'game' | 'other'
+export type LogSource = 'cet' | 'red4ext' | 'game' | 'system' | 'other'
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug'
 
 export interface LogFileInfo {

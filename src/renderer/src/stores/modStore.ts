@@ -47,8 +47,8 @@ export const useModStore = create<ModStore>((set, get) => ({
   loading: false,
   searchQuery: '',
   typeFilter: null,
-  sortColumn: 'name',
-  sortDirection: 'asc',
+  sortColumn: 'importedAt',
+  sortDirection: 'desc',
 
   fetchMods: async () => {
     set({ loading: true })

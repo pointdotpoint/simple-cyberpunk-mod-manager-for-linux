@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin({ exclude: [] })],
     build: {
       rollupOptions: {
-        external: ['better-sqlite3', 'node-7z', 'electron-updater']
+        external: ['better-sqlite3', 'electron-updater']
       }
     }
   },

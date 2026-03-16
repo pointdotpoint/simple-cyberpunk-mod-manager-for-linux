@@ -59,6 +59,7 @@ export default function LogToolbar(): JSX.Element {
         <option value="cet">CET</option>
         <option value="red4ext">RED4ext</option>
         <option value="game">Game</option>
+        <option value="system">System</option>
       </select>
 
       {/* Level filter */}
