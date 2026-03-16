@@ -1,0 +1,26 @@
+appId: com.cp2077-mod-manager.app
+productName: Simple Cyberpunk Mod Manager
+directories:
+  buildResources: build
+  output: dist
+linux:
+  target:
+    - AppImage
+  category: Game
+  icon: build/icon.png
+appImage:
+  artifactName: '${productName}-${version}-${arch}.AppImage'
+asar: true
+asarUnpack:
+  - 'node_modules/better-sqlite3/**'
+  - 'node_modules/7zip-bin/**'
+files:
+  - out/**
+  - node_modules/better-sqlite3/**
+  - node_modules/7zip-bin/**
+  - node_modules/node-7z/**
+  - node_modules/node-unrar-js/**
+publish:
+  provider: github
+  owner: pointdotpoint
+  repo: simple-cyberpunk-mod-manager-for-linux

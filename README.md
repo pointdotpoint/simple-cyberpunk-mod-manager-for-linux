@@ -80,3 +80,7 @@ Shared type definitions in `src/shared/types.ts` serve as the contract between a
 - **better-sqlite3** — Mod metadata database (WAL mode)
 - **node-7z** — Archive extraction
 - **Vitest** — Testing
+
+## Disclaimer
+
+I made this for myself with vibecoding. If anything doesn't work quite right for you, feel free to fork the project.
