@@ -1,8 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useModStore } from '../stores/modStore'
 import SearchBar from './SearchBar'
 import BulkActions from './BulkActions'
 import ModRow from './ModRow'
+import RenameModDialog from './RenameModDialog'
+import DeleteModDialog from './DeleteModDialog'
 import type { Mod, ConflictInfo } from '../../../shared/types'
 
 type SortColumn = 'name' | 'type' | 'fileSize' | 'importedAt'
@@ -42,6 +44,8 @@ interface ModListProps {
 }
 
 export default function ModList({ onConflict, onNexusImportClick }: ModListProps): JSX.Element {
+  const [modToRename, setModToRename] = useState<Mod | null>(null)
+  const [modToDelete, setModToDelete] = useState<Mod | null>(null)
   const mods = useModStore((s) => s.mods)
   const selectedIds = useModStore((s) => s.selectedIds)
   const searchQuery = useModStore((s) => s.searchQuery)
@@ -59,6 +63,8 @@ export default function ModList({ onConflict, onNexusImportClick }: ModListProps
   const importMod = useModStore((s) => s.importMod)
   const enableMod = useModStore((s) => s.enableMod)
   const disableMod = useModStore((s) => s.disableMod)
+  const deleteMod = useModStore((s) => s.deleteMod)
+  const renameMod = useModStore((s) => s.renameMod)
   const bulkEnable = useModStore((s) => s.bulkEnable)
   const bulkDisable = useModStore((s) => s.bulkDisable)
   const bulkDelete = useModStore((s) => s.bulkDelete)
@@ -108,6 +114,14 @@ export default function ModList({ onConflict, onNexusImportClick }: ModListProps
     }
   }
 
+  const handleRename = (mod: Mod): void => {
+    setModToRename(mod)
+  }
+
+  const handleDelete = (mod: Mod): void => {
+    setModToDelete(mod)
+  }
+
   const selectedArray = Array.from(selectedIds)
 
   const enabledFilteredIds = useMemo(
@@ -119,6 +133,16 @@ export default function ModList({ onConflict, onNexusImportClick }: ModListProps
   const handleDisableAll = (): void => {
     if (enabledFilteredIds.length > 0) {
       bulkDisable(enabledFilteredIds)
+    }
+  }
+
+  const handleBulkDelete = (): void => {
+    if (
+      window.confirm(
+        `Delete ${selectedArray.length} selected mod${selectedArray.length === 1 ? '' : 's'}? This also removes their staged files.`
+      )
+    ) {
+      bulkDelete(selectedArray)
     }
   }
 
@@ -153,7 +177,7 @@ export default function ModList({ onConflict, onNexusImportClick }: ModListProps
           selectedCount={selectedIds.size}
           onEnableAll={() => bulkEnable(selectedArray)}
           onDisableAll={() => bulkDisable(selectedArray)}
-          onDeleteAll={() => bulkDelete(selectedArray)}
+          onDeleteAll={handleBulkDelete}
           onClearSelection={clearSelection}
         />
       )}
@@ -182,6 +206,7 @@ export default function ModList({ onConflict, onNexusImportClick }: ModListProps
                     )}
                   </th>
                 ))}
+                <th className="px-4 py-2 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -192,12 +217,25 @@ export default function ModList({ onConflict, onNexusImportClick }: ModListProps
                   selected={selectedIds.has(mod.id)}
                   onSelect={(e) => handleRowSelect(mod.id, e)}
                   onToggleEnable={() => handleToggleEnable(mod)}
+                  onRename={() => handleRename(mod)}
+                  onDelete={() => handleDelete(mod)}
                 />
               ))}
             </tbody>
           </table>
         </div>
       )}
+
+      <RenameModDialog
+        mod={modToRename}
+        onConfirm={(name) => renameMod(modToRename!.id, name)}
+        onCancel={() => setModToRename(null)}
+      />
+      <DeleteModDialog
+        mod={modToDelete}
+        onConfirm={() => deleteMod(modToDelete!.id)}
+        onCancel={() => setModToDelete(null)}
+      />
     </div>
   )
 }

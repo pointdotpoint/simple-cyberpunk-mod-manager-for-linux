@@ -2,7 +2,7 @@ import { ipcMain, BrowserWindow } from 'electron'
 import { importMod } from '../services/mod-importer'
 import { enableMod, disableMod, deleteMod, bulkEnable, bulkDisable, bulkDelete } from '../services/mod-deployer'
 import { scanExistingMods } from '../services/mod-scanner'
-import { getAllMods, getSetting } from '../database/queries'
+import { getAllMods, getMod, getSetting, updateModName } from '../database/queries'
 
 export function registerModHandlers(): void {
   ipcMain.handle('mods:list', () => getAllMods())
@@ -18,6 +18,14 @@ export function registerModHandlers(): void {
   ipcMain.handle('mods:enable-force', (_event, id: string) => enableMod(id, true))
   ipcMain.handle('mods:disable', (_event, id: string) => disableMod(id))
   ipcMain.handle('mods:delete', (_event, id: string) => deleteMod(id))
+  ipcMain.handle('mods:rename', (_event, id: string, name: string) => {
+    if (typeof name !== 'string') throw new Error('Mod name must be text')
+    const trimmedName = name.trim()
+    if (!trimmedName) throw new Error('Mod name cannot be empty')
+    if (trimmedName.length > 200) throw new Error('Mod name cannot exceed 200 characters')
+    if (!getMod(id)) throw new Error(`Mod not found: ${id}`)
+    updateModName(id, trimmedName)
+  })
   ipcMain.handle('mods:bulk-enable', (_event, ids: string[]) => bulkEnable(ids))
   ipcMain.handle('mods:bulk-disable', (_event, ids: string[]) => bulkDisable(ids))
   ipcMain.handle('mods:bulk-delete', (_event, ids: string[]) => bulkDelete(ids))

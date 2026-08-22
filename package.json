@@ -15,14 +15,6 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.28.2",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "7zip-bin",
-      "better-sqlite3",
-      "electron",
-      "esbuild"
-    ]
-  },
   "dependencies": {
     "7zip-bin": "^5.2.0",
     "better-sqlite3": "^12.8.0",

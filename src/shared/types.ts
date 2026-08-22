@@ -122,6 +122,7 @@ export interface ElectronAPI {
   enableModForce(id: string): Promise<void>
   disableMod(id: string): Promise<void>
   deleteMod(id: string): Promise<void>
+  renameMod(id: string, name: string): Promise<void>
   bulkEnable(ids: string[]): Promise<EnableResult[]>
   bulkDisable(ids: string[]): Promise<void>
   bulkDelete(ids: string[]): Promise<void>

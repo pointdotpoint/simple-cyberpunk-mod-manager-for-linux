@@ -21,6 +21,7 @@ interface ModStore {
   enableModForce: (id: string) => Promise<void>
   disableMod: (id: string) => Promise<void>
   deleteMod: (id: string) => Promise<void>
+  renameMod: (id: string, name: string) => Promise<void>
   bulkEnable: (ids: string[]) => Promise<void>
   bulkDisable: (ids: string[]) => Promise<void>
   bulkDelete: (ids: string[]) => Promise<void>
@@ -113,12 +114,25 @@ export const useModStore = create<ModStore>((set, get) => ({
       set((state) => {
         const selectedIds = new Set(state.selectedIds)
         selectedIds.delete(id)
-        return { selectedIds }
+        return {
+          selectedIds,
+          lastSelectedId: state.lastSelectedId === id ? null : state.lastSelectedId
+        }
       })
       await get().fetchMods()
       toast().addToast('success', 'Mod deleted')
     } catch (err) {
       toast().addToast('error', `Failed to delete mod: ${err}`)
+    }
+  },
+
+  renameMod: async (id: string, name: string) => {
+    try {
+      await window.electronAPI.renameMod(id, name)
+      await get().fetchMods()
+      toast().addToast('success', 'Mod renamed')
+    } catch (err) {
+      toast().addToast('error', `Failed to rename mod: ${err}`)
     }
   },
 
@@ -148,7 +162,12 @@ export const useModStore = create<ModStore>((set, get) => ({
       set((state) => {
         const selectedIds = new Set(state.selectedIds)
         for (const id of ids) selectedIds.delete(id)
-        return { selectedIds }
+        return {
+          selectedIds,
+          lastSelectedId: state.lastSelectedId && ids.includes(state.lastSelectedId)
+            ? null
+            : state.lastSelectedId
+        }
       })
       await get().fetchMods()
       toast().addToast('success', `${ids.length} mods deleted`)
