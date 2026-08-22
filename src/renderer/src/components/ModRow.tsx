@@ -5,6 +5,8 @@ interface ModRowProps {
   selected: boolean
   onSelect: (e: React.MouseEvent) => void
   onToggleEnable: () => void
+  onRename: () => void
+  onDelete: () => void
 }
 
 const TYPE_STYLES: Record<ModType, string> = {
@@ -29,7 +31,14 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString()
 }
 
-export default function ModRow({ mod, selected, onSelect, onToggleEnable }: ModRowProps): JSX.Element {
+export default function ModRow({
+  mod,
+  selected,
+  onSelect,
+  onToggleEnable,
+  onRename,
+  onDelete
+}: ModRowProps): JSX.Element {
   const enabled = mod.status === 'enabled'
 
   return (
@@ -75,6 +84,30 @@ export default function ModRow({ mod, selected, onSelect, onToggleEnable }: ModR
 
       {/* Date */}
       <td className="px-4 py-3 text-text-muted text-sm">{formatDate(mod.importedAt)}</td>
+
+      {/* Actions */}
+      <td className="px-4 py-3 text-right whitespace-nowrap">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onRename()
+          }}
+          className="px-2 py-1 text-xs text-text-muted hover:text-neon-cyan hover:bg-neon-cyan/10 rounded transition-colors"
+          title={`Rename ${mod.name}`}
+        >
+          Rename
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete()
+          }}
+          className="ml-1 px-2 py-1 text-xs text-text-muted hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+          title={`Delete ${mod.name}`}
+        >
+          Delete
+        </button>
+      </td>
     </tr>
   )
 }

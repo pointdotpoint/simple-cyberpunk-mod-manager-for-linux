@@ -9,6 +9,7 @@ const api: ElectronAPI = {
   enableModForce: (id) => ipcRenderer.invoke('mods:enable-force', id),
   disableMod: (id) => ipcRenderer.invoke('mods:disable', id),
   deleteMod: (id) => ipcRenderer.invoke('mods:delete', id),
+  renameMod: (id, name) => ipcRenderer.invoke('mods:rename', id, name),
   bulkEnable: (ids) => ipcRenderer.invoke('mods:bulk-enable', ids),
   bulkDisable: (ids) => ipcRenderer.invoke('mods:bulk-disable', ids),
   bulkDelete: (ids) => ipcRenderer.invoke('mods:bulk-delete', ids),

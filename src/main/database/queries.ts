@@ -98,6 +98,15 @@ export function updateModStatus(id: string, status: ModStatus): void {
   ).run(status, new Date().toISOString(), id)
 }
 
+export function updateModName(id: string, name: string): void {
+  const db = getDb()
+  db.prepare('UPDATE mods SET name = ?, updated_at = ? WHERE id = ?').run(
+    name,
+    new Date().toISOString(),
+    id
+  )
+}
+
 export function deleteMod(id: string): void {
   const db = getDb()
   db.prepare('DELETE FROM mods WHERE id = ?').run(id)

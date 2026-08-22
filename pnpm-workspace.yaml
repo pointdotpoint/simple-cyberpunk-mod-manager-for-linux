@@ -1,0 +1,5 @@
+onlyBuiltDependencies:
+  - 7zip-bin
+  - better-sqlite3
+  - electron
+  - esbuild

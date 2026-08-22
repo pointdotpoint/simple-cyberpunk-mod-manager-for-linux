@@ -343,7 +343,10 @@ export async function importMod(
     const modName = path.basename(archivePath, path.extname(archivePath))
 
     // 6. Determine staging directory
-    const customStagingDir = getSetting('stagingDirectory')
+    // Keep this key in sync with the settings handler and deployer.  Using the
+    // display-property name here meant imports ignored a configured staging
+    // directory, while delete looked in that configured directory.
+    const customStagingDir = getSetting('staging_directory')
     const defaultStagingBase = path.join(
       process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share'),
       'cp2077-mod-manager',

@@ -93,6 +93,25 @@ describe('database', () => {
     expect(updated!.status).toBe('enabled')
   })
 
+  it('updates a mod name', () => {
+    const now = new Date().toISOString()
+    queries.insertMod({
+      id: 'test-rename',
+      name: 'Original name',
+      type: 'archive',
+      status: 'disabled',
+      source: 'imported',
+      sourceArchive: 'test.zip',
+      fileSize: 100,
+      fileCount: 1,
+      importedAt: now,
+      updatedAt: now
+    })
+
+    queries.updateModName('test-rename', 'Renamed mod')
+    expect(queries.getMod('test-rename')!.name).toBe('Renamed mod')
+  })
+
   it('deletes mod with cascade', () => {
     const now = new Date().toISOString()
     const mod = {

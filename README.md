@@ -46,6 +46,17 @@ pnpm dev
 pnpm build
 ```
 
+### AppImage
+
+Build a distributable AppImage with:
+
+```bash
+make appimage
+```
+
+The command installs missing dependencies automatically. The finished file is written to
+`dist/`. The Makefile also provides `make build`, `make test`, and `make help`.
+
 ## Testing
 
 ```bash
